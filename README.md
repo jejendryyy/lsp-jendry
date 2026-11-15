@@ -57,7 +57,3 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-
-Berikut adalah draf *copywriting* siap pakai untuk **PT. Solusi Net Nusantara**, yang disusun agar langsung sesuai dengan kolom dan struktur kartu UI di halaman **Produk & Layanan** serta **Galeri**.
-
----
