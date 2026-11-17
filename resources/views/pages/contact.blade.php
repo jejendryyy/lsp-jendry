@@ -120,6 +120,7 @@
               <tbody>
                 @foreach ($serviceRequests as $serviceRequest)
                   @php
+                    $productName = $serviceRequest->product?->name;
                     $statusLabel = match ($serviceRequest->status) {
                       \App\Models\ServiceRequest::STATUS_APPROVED => 'Disetujui',
                       \App\Models\ServiceRequest::STATUS_ACTIVE => 'Aktif',
@@ -137,7 +138,7 @@
                   @endphp
                   <tr style="background: #fff; {{ $loop->last ? '' : 'border-bottom: 1px solid #171717;' }}">
                     <td style="padding: 18px 22px; font-size: 15px;">{{ $serviceRequest->created_at->format('d M Y') }}</td>
-                    <td style="padding: 18px 22px; font-size: 15px;">{{ $serviceRequest->product->name }}</td>
+                    <td style="padding: 18px 22px; font-size: 15px;">{{ $productName ?? 'Layanan sudah tidak tersedia' }}</td>
                     <td style="padding: 18px 22px;">
                       <span
                         style="display: inline-flex; align-items: center; border-radius: 9999px; padding: 4px 10px; color: {{ $statusColors[0] }}; background: {{ $statusColors[1] }}; font-size: 12px; font-weight: 700; line-height: 1.5;">
@@ -145,10 +146,10 @@
                       </span>
                     </td>
                     <td>
-                     @if ($serviceRequest->status === \App\Models\ServiceRequest::STATUS_APPROVED)
+                     @if ($productName !== null && $serviceRequest->status === \App\Models\ServiceRequest::STATUS_APPROVED)
                        @php
                           $paymentMessage = 'Halo, saya ingin melanjutkan pembayaran untuk layanan '
-                            . $serviceRequest->product->name
+                            . $productName
                             . ' (pengajuan tanggal ' . $serviceRequest->created_at->format('d M Y') . ').';
                         @endphp
 
@@ -158,10 +159,10 @@
                           Lakukan Pembayaran
                         </a>
                      @endif 
-                     @if ($serviceRequest->status === \App\Models\ServiceRequest::STATUS_NONACTIVE)
+                     @if ($productName !== null && $serviceRequest->status === \App\Models\ServiceRequest::STATUS_NONACTIVE)
                        @php
                           $paymentMessage = 'Halo, saya ingin melakukan perpanjangan untuk layanan '
-                            . $serviceRequest->product->name
+                            . $productName
                             . ' (pengajuan tanggal ' . $serviceRequest->created_at->format('d M Y') . ').';
                         @endphp
 

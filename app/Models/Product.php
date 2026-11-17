@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
@@ -18,6 +19,13 @@ class Product extends Model
         'sort_order'
     ];
 
+    protected static function booted(): void
+    {
+        static::deleting(function (Product $product): void {
+            $product->contacts()->update(['product_id' => null]);
+        });
+    }
+
     protected function casts(): array 
     {
         return ['sort_order' => 'integer'];
@@ -31,5 +39,10 @@ class Product extends Model
     public function serviceRequest()
     {
         return $this->hasMany(ServiceRequest::class)->whereNotNull('status');
+    }
+
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(Contact::class);
     }
 }

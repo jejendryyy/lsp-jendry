@@ -120,6 +120,25 @@ class ServiceRequestTest extends TestCase
         $this->assertDatabaseMissing('products', ['id' => $productId]);
     }
 
+    public function test_deleting_a_product_model_clears_contact_references_before_delete()
+    {
+        $product = $this->createProduct();
+        $contact = ServiceRequest::create([
+            'product_id' => $product->id,
+            'sender_name' => 'Pengunjung',
+            'sender_email' => 'visitor@example.com',
+            'status' => ServiceRequest::STATUS_WAITING,
+        ]);
+
+        $product->delete();
+
+        $this->assertDatabaseHas('contacts', [
+            'id' => $contact->id,
+            'product_id' => null,
+        ]);
+        $this->assertDatabaseMissing('products', ['id' => $product->id]);
+    }
+
     public function test_a_guest_cannot_send_a_contact_message_or_service_request()
     {
         User::factory()->create([
@@ -237,6 +256,34 @@ class ServiceRequestTest extends TestCase
             ->assertSee('color: #166534; background: #dcfce7;', false)
             ->assertSee('color: #92400e; background: #fef3c7;', false)
             ->assertSee('color: #b91c1c; background: #fee2e2;', false);
+    }
+
+    public function test_contact_history_handles_requests_for_deleted_products()
+    {
+        $user = User::factory()->create();
+        $product = $this->createProduct();
+
+        foreach ([
+            ServiceRequest::STATUS_APPROVED,
+            ServiceRequest::STATUS_NONACTIVE,
+        ] as $status) {
+            ServiceRequest::create([
+                'user_id' => $user->id,
+                'product_id' => $product->id,
+                'sender_name' => $user->name,
+                'sender_email' => $user->email,
+                'status' => $status,
+            ]);
+        }
+
+        $product->delete();
+
+        $this->actingAs($user)
+            ->get(route('contact'))
+            ->assertOk()
+            ->assertSee('Layanan sudah tidak tersedia')
+            ->assertDontSee('Lakukan Pembayaran')
+            ->assertDontSee('Lakukan Perpanjangan');
     }
 
     public function test_an_admin_can_update_the_request_status_in_filament()
